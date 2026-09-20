@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>2048 / Jev 决策实验室</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="shell">
+    <header><a class="wordmark" href="/" aria-label="Jev 2048 首页"><span class="mark">j.</span> JEV <span class="divider">/</span> PLAY LAB</a><div class="connections"><span id="key-status">检查密钥</span><span id="mcp-mode">PLAYWRIGHT MCP</span><span id="connection-status" class="connection">连接中</span></div></header>
+    <section class="intro"><div><p class="eyebrow">一个棋盘，观察一次真实的 AI 决策</p><h1>2048<span class="title-dot">.</span><span class="title-rest">让 Jev 落子。</span></h1><p class="subtitle">从棋盘到概率，再到一次按键。把每一步判断摊开来看。</p></div><div class="model-label"><span>DECISION ENGINE</span><strong id="model">Jev · System One</strong><small>真实网页 · 结构化判断 · 实时校验</small></div></section>
+    <section class="controls" aria-label="游戏控制"><div class="buttons"><button id="connect" class="primary">连接游戏 <span>↗</span></button><button id="start" disabled>自动运行 <span>▶</span></button><button id="step" disabled>走一步 <span>→</span></button><button id="pause" disabled>暂停 <span>Ⅱ</span></button><button id="restart" class="quiet" disabled>重新开始</button></div><div class="settings"><label>本轮最多 <input id="steps" type="number" min="1" max="2000" value="2000"></label><label>额外等待 <input id="interval" type="number" min="0" max="10000" step="50" value="0"> ms</label><button id="speed-zero" class="quiet">最快</button></div></section>
+    <div class="status-line" role="status"><span class="status-dot" id="status-dot"></span><span id="status">连接游戏，观察 Jev 的第一步判断。</span><span id="phase-label">就绪前</span></div>
+    <section class="workspace">
+      <article class="board-panel"><div class="section-head"><h2>真实棋盘</h2><button id="show" class="quiet" disabled>显示游戏窗口 ↗</button></div><div class="scoreline"><div><span>当前得分</span><strong id="score">—</strong></div><div><span>最大方块</span><strong id="max-tile">—</strong></div><div><span>已走步数</span><strong id="move-count">0</strong></div></div><div id="board" class="board" aria-label="实时棋盘"></div><div class="board-caption"><span id="board-source">等待连接真实游戏</span><span id="empty-cells">— 个空格</span></div></article>
+      <article class="decision-panel"><div class="section-head"><h2>这一刻，Jev 怎么选</h2><span id="step-label" class="tag">等待第一步</span></div><div class="decision-head"><div id="direction" class="direction">?</div><div><p id="decision-title">四个方向，一次判断</p><span id="decision-subtitle">只把能改变棋盘的方向交给 Jev</span></div><div class="confidence"><strong id="confidence">—</strong><span>置信度</span></div></div><div id="candidates" class="candidates"></div><p class="caption">候选棋盘为代码计算的移动结果，尚未生成随机方块。百分比为 Jev 对方向的概率分布。</p><div class="decision-footer"><div><span>Jev 请求耗时</span><strong id="latency">—</strong></div><div><span>整步耗时</span><strong id="total-time">—</strong></div><div><span>执行校验</span><strong id="verification">等待执行</strong></div></div></article>
+    </section>
+    <section class="pipeline" aria-label="工作流程"><div data-phase="observe"><span class="flow-number">01</span><h3>看见</h3><p>MCP 读取棋盘</p></div><span class="flow-arrow">→</span><div data-phase="compute"><span class="flow-number">02</span><h3>计算</h3><p>代码列出合法走法</p></div><span class="flow-arrow">→</span><div data-phase="decide"><span class="flow-number">03</span><h3>判断</h3><p>Jev 返回方向与概率</p></div><span class="flow-arrow">→</span><div data-phase="execute"><span class="flow-number">04</span><h3>行动</h3><p>MCP 按下方向键</p></div><span class="flow-arrow">→</span><div data-phase="verify"><span class="flow-number">05</span><h3>核验</h3><p>检查合并与新方块</p></div></section>
+    <section class="bottom-grid"><article class="history-panel"><div class="section-head"><h2>行走记录</h2><a href="/api/export" download>导出完整 JSONL ↓</a></div><div class="history-table"><table><thead><tr><th>步</th><th>方向</th><th>得分</th><th>置信度</th><th>Jev 耗时</th></tr></thead><tbody id="history"></tbody></table><p id="history-empty" class="empty-note">第一步完成后，这里会留下实际执行的记录。</p></div></article><article class="inspect-panel"><div class="section-head"><h2>打开这次判断</h2><span class="tag">可复查</span></div><div class="tabs" role="group" aria-label="查看请求或响应"><button data-tab="request" class="selected">输入与问题</button><button data-tab="answer">模型返回</button><button data-tab="result">执行结果</button></div><pre id="inspector">等待读取棋盘。这里将展示实际发送给 Jev 的结构化数据。</pre></article></section>
+    <footer><p>Jev 做选择，代码负责规则。置信度表示选项分布的集中程度，不代表获胜概率。</p><div><span id="calls">0 次模型调用</span><span id="tokens">0 输入 tokens</span></div></footer>
+  </div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

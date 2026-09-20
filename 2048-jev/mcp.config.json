@@ -1,0 +1,7 @@
+{
+  "extension": true,
+  "snapshot": { "mode": "none" },
+  "timeouts": { "action": 5000, "navigation": 30000, "settle": 0 },
+  "webmcp": false,
+  "imageResponses": "omit"
+}

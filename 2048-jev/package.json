@@ -1,0 +1,20 @@
+{
+  "name": "2048-jev",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "通过 Playwright MCP 展示 Jev 自动玩 2048 的决策流程",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test",
+    "browser:install": "playwright install chromium"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "@playwright/mcp": "0.0.82",
+    "@typesafe-ai/sdk": "0.6.0"
+  }
+}
