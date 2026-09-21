@@ -12,8 +12,28 @@ export const GAME_URL = 'https://2048.io/';
 const require = createRequire(import.meta.url);
 
 // 读取当前标签页的可见棋盘，避免同源其他标签页的共享存档干扰。
-export function readGamePage() {
+export async function readGamePage() {
   if (location.origin !== 'https://2048.io') throw new Error('当前页面不是 2048.io');
+
+  // 网站分两帧更新方块及最终位置；后台页面必须恢复渲染后才能读取。
+  await new Promise((resolve, reject) => {
+    let frame;
+    const timer = setTimeout(() => {
+      cancelAnimationFrame(frame);
+      reject(new Error('游戏页面渲染超时，请保持 2048.io 标签页可见并取消窗口最小化后重试。'));
+    }, 2000);
+    frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => {
+        clearTimeout(timer);
+        if (document.visibilityState !== 'visible') {
+          reject(new Error('游戏页面已进入后台，请保持 2048.io 标签页可见后重试。'));
+          return;
+        }
+        resolve();
+      });
+    });
+  });
+
   const container = document.querySelector('.tile-container');
   const scoreElement = document.querySelector('.score-container');
   if (!container || !scoreElement) throw new Error('未找到 2048 棋盘，网站结构可能已变化');
@@ -97,9 +117,7 @@ export class GameBrowser {
       await this.call('browser_tabs', { action: 'new', url: GAME_URL });
       this.opened = true;
     }
-    const game = await this.read();
-    await this.show();
-    return game;
+    return this.read();
   }
 
   async show() {
@@ -109,6 +127,8 @@ export class GameBrowser {
   }
 
   async read() {
+    // 每次观察都恢复游戏页渲染，覆盖从控制面板发起操作及后台按键后的校验。
+    await this.show();
     const state = decodeResult(await this.call('browser_evaluate', { function: readGamePage.toString() }));
     validateBoard(state.board);
     if (!Number.isSafeInteger(state.score) || state.score < 0 || !state.board.flat().some(Boolean)) throw new Error('游戏状态尚未就绪');
@@ -117,12 +137,14 @@ export class GameBrowser {
 
   async move(direction) {
     if (!KEYS[direction]) throw new Error('禁止执行未知动作');
+    await this.show();
     await this.call('browser_press_key', { key: KEYS[direction] });
   }
 
   async restart() {
     // 按钮由网站自身处理，禁止修改存档或直接替换游戏状态。
-    await this.call('browser_evaluate', { function: "async () => { if (location.origin !== 'https://2048.io') throw new Error('页面不匹配'); const button = document.querySelector('.restart-button'); if (!button) throw new Error('未找到重新开始按钮'); button.click(); await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))); return true; }" });
+    await this.show();
+    await this.call('browser_evaluate', { function: "() => { if (location.origin !== 'https://2048.io') throw new Error('页面不匹配'); const button = document.querySelector('.restart-button'); if (!button) throw new Error('未找到重新开始按钮'); button.click(); return true; }" });
     return this.read();
   }
 

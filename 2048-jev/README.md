@@ -32,6 +32,8 @@ npm start
 
 运行期间请不要手动移动游戏方块或切换工具所控制的 MCP 标签页。若推理期间棋盘发生变化，工具会丢弃决策并暂停。
 
+从控制面板发起操作后，程序会自动把游戏标签页置前。每次读取都等待两个渲染帧，让方块和位置完成更新；请保持 Chrome 窗口可见，避免最小化。渲染等待设有 2000 毫秒的页面计时器，超时会停止并提示，不会重复发送方向键；后台节流或页面冻结可能延迟计时器触发，因此这不是严格的两秒墙钟上限，外层 MCP 调用仍有 40 秒超时。
+
 ## 迁移到 Windows
 
 复制整个子项目即可；无需复制 `node_modules` 和 `artifacts`。在新设备安装同一个 Chrome 扩展，再按上面的两个命令安装依赖和运行。
@@ -40,7 +42,7 @@ npm start
 
 程序不读取某台机器的 shell 配置文件，不包含 macOS 用户目录、AppleScript、POSIX 启动脚本或 Windows 专属启动脚本。启动 MCP 使用 `process.execPath` 和独立参数数组，路径通过 Node 的路径 API 解析。
 
-当前验证环境为 macOS；Windows 尚未实机运行，迁移时仍应执行 `npm test` 并验证一次真实单步。
+初始验证环境为 macOS。2026-09-21 的本地修复记录补充了 Windows（Node v22.21.1）下 28 项自动化测试及 3 步强制后台切换的真实网页回归；该网页回归覆盖浏览器层与规则校验，未覆盖面板、独立 MCP 子进程与 Jev 的完整链路。迁移时仍应执行 `npm test` 并验证一次真实单步。
 
 ## Playwright MCP 连接方式
 
@@ -151,6 +153,7 @@ npm test
 - 连接等待或失败：确认 Chrome 正在运行、官方扩展已安装，并按连接页提示允许；无需预先打开游戏页。HTTP 模式需确认服务连接的是你自己的浏览器。
 - 连接中断：检查启动服务的终端是否退出；外部 HTTP MCP 还需确认其进程和地址可访问。
 - 提示棋盘不匹配：停止手动操作，再重新连接；若重复出现，检查 `src/browser.js` 的网站解析规则。
+- 提示游戏页面渲染超时或进入后台：取消 Chrome 窗口最小化，保持游戏页可见后重试。程序会自动置前游戏页并等候刷新；单纯增加「额外等待」无法恢复后台页面的渲染。
 - 端口占用：配置其他 `PORT` 后重新启动。
 
 官方参考：[TypeSafe JavaScript SDK](https://docs.typesafe.ai/sdk/javascript.md)、[Choice](https://docs.typesafe.ai/primitives/choice.md)、[Playwright MCP](https://github.com/microsoft/playwright-mcp)。

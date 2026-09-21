@@ -32,10 +32,13 @@ test('读取当前标签页，忽略其他标签页的共享存档和分数动�
   const { runInNewContext } = await import('node:vm');
   const { readGamePage } = await import('../src/browser.js');
   const tile = value => ({ className: 'tile tile-position-1-1', querySelector: () => ({ textContent: String(value) }) });
-  const state = runInNewContext(`(${readGamePage.toString()})()`, {
+  const state = await runInNewContext(`(${readGamePage.toString()})()`, {
     location: { origin: 'https://2048.io' },
+    setTimeout, clearTimeout,
+    requestAnimationFrame: callback => setTimeout(callback, 0),
+    cancelAnimationFrame: clearTimeout,
     localStorage: { getItem: () => { throw new Error('不应读取共享存档'); } },
-    document: { querySelector: selector => ({
+    document: { visibilityState: 'visible', querySelector: selector => ({
       '.tile-container': { querySelectorAll: () => [tile(2), tile(4)] },
       '.score-container': { childNodes: [{ nodeType: 3, textContent: '16' }, { nodeType: 1, textContent: '+4' }] },
       '.game-message': { classList: { contains: () => false } },
